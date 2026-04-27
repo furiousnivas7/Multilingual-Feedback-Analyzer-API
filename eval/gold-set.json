@@ -1,0 +1,146 @@
+[
+  {
+    "id": "sin-001",
+    "text": "Service eka super, but driver eka late aawa. Price okay.",
+    "expected": {
+      "detected_language": "singlish",
+      "script": "latin",
+      "sentiment": "mixed",
+      "themes": ["service", "delivery", "price"],
+      "is_sarcastic": false,
+      "contains_code_mix": true
+    }
+  },
+  {
+    "id": "sin-002",
+    "text": "Godak watinawa, staff la friendly. Daamath wageyi.",
+    "expected": {
+      "detected_language": "singlish",
+      "script": "latin",
+      "sentiment": "positive",
+      "themes": ["service", "staff"],
+      "is_sarcastic": false,
+      "contains_code_mix": true
+    }
+  },
+  {
+    "id": "sin-003",
+    "text": "App crash aawa, money waste. Bakka service.",
+    "expected": {
+      "detected_language": "singlish",
+      "script": "latin",
+      "sentiment": "negative",
+      "themes": ["app_ux", "billing"],
+      "is_sarcastic": false,
+      "contains_code_mix": true
+    }
+  },
+  {
+    "id": "tan-001",
+    "text": "App ரொம்ப good, ஆனா payment crash ஆகுது",
+    "expected": {
+      "detected_language": "tanglish",
+      "script": "mixed",
+      "sentiment": "mixed",
+      "themes": ["app_ux", "billing"],
+      "is_sarcastic": false,
+      "contains_code_mix": true
+    }
+  },
+  {
+    "id": "tan-002",
+    "text": "Delivery romba late aana quality super da",
+    "expected": {
+      "detected_language": "tanglish",
+      "script": "latin",
+      "sentiment": "mixed",
+      "themes": ["delivery", "quality"],
+      "is_sarcastic": false,
+      "contains_code_mix": true
+    }
+  },
+  {
+    "id": "eng-001",
+    "text": "The delivery was extremely fast and the food arrived hot. Very satisfied.",
+    "expected": {
+      "detected_language": "english",
+      "script": "latin",
+      "sentiment": "positive",
+      "themes": ["delivery", "food"],
+      "is_sarcastic": false,
+      "contains_code_mix": false
+    }
+  },
+  {
+    "id": "eng-002",
+    "text": "Oh great, another app update that broke everything. Really helpful.",
+    "expected": {
+      "detected_language": "english",
+      "script": "latin",
+      "sentiment": "negative",
+      "themes": ["app_ux"],
+      "is_sarcastic": true,
+      "contains_code_mix": false
+    }
+  },
+  {
+    "id": "eng-003",
+    "text": "Prices have increased by 20% in the last month.",
+    "expected": {
+      "detected_language": "english",
+      "script": "latin",
+      "sentiment": "neutral",
+      "themes": ["price"],
+      "is_sarcastic": false,
+      "contains_code_mix": false
+    }
+  },
+  {
+    "id": "tam-001",
+    "text": "சேவை மிகவும் நல்லது. விலை கொஞ்சம் அதிகமாக இருந்தது.",
+    "expected": {
+      "detected_language": "tamil",
+      "script": "tamil_native",
+      "sentiment": "mixed",
+      "themes": ["service", "price"],
+      "is_sarcastic": false,
+      "contains_code_mix": false
+    }
+  },
+  {
+    "id": "tam-002",
+    "text": "பொருள் தரம் மிக மோசமாக இருந்தது. திரும்ப வாங்க மாட்டேன்.",
+    "expected": {
+      "detected_language": "tamil",
+      "script": "tamil_native",
+      "sentiment": "negative",
+      "themes": ["quality"],
+      "is_sarcastic": false,
+      "contains_code_mix": false
+    }
+  },
+  {
+    "id": "sin-nat-001",
+    "text": "සේවාව ඉතා හොඳයි. නමුත් බෙදා හැරීම ප්‍රමාද විය.",
+    "expected": {
+      "detected_language": "sinhala",
+      "script": "sinhala_native",
+      "sentiment": "mixed",
+      "themes": ["service", "delivery"],
+      "is_sarcastic": false,
+      "contains_code_mix": false
+    }
+  },
+  {
+    "id": "sin-nat-002",
+    "text": "මිල ගණන් වැඩිය. නමුත් ගුණාත්මකභාවය හොඳයි.",
+    "expected": {
+      "detected_language": "sinhala",
+      "script": "sinhala_native",
+      "sentiment": "mixed",
+      "themes": ["price", "quality"],
+      "is_sarcastic": false,
+      "contains_code_mix": false
+    }
+  }
+]
