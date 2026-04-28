@@ -10,7 +10,11 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "test": "jest --passWithNoTests"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write src"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -35,9 +39,17 @@
     "@types/node": "^22.9.0",
     "@types/pdfkit": "^0.13.6",
     "@types/pg": "^8.11.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "eslint": "^9.0.0",
     "nodemon": "^3.1.7",
+    "prettier": "^3.3.0",
     "prisma": "^7.8.0",
+    "supertest": "^7.0.0",
+    "@types/supertest": "^6.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^2.0.0"
   }
 }

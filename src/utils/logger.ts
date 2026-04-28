@@ -1,24 +1,11 @@
-type Level = 'error' | 'warn' | 'info' | 'debug';
+const levels = { error: 0, warn: 1, info: 2, debug: 3 } as const;
+type Level = keyof typeof levels;
 
-const rank: Record<Level, number> = { error: 0, warn: 1, info: 2, debug: 3 };
-const configured = rank[(process.env.LOG_LEVEL as Level) ?? 'info'] ?? 2;
-
-function log(level: Level, fn: string, message: string, meta?: unknown): void {
-  if (rank[level] > configured) return;
-  const entry: Record<string, unknown> = {
-    ts: new Date().toISOString(),
-    level,
-    fn,
-    message,
-  };
-  if (meta !== undefined) entry['meta'] = meta;
-  const out = JSON.stringify(entry);
-  level === 'error' ? console.error(out) : console.log(out);
-}
+const configured = levels[(process.env.LOG_LEVEL as Level) ?? 'info'] ?? 2;
 
 export const logger = {
-  info: (fn: string, msg: string, meta?: unknown) => log('info', fn, msg, meta),
-  debug: (fn: string, msg: string, meta?: unknown) => log('debug', fn, msg, meta),
-  warn: (fn: string, msg: string, meta?: unknown) => log('warn', fn, msg, meta),
-  error: (fn: string, msg: string, meta?: unknown) => log('error', fn, msg, meta),
+  info:  (fn: string, msg: string, ...args: unknown[]) => { if (levels.info  <= configured) console.log (`[${fn}] -> ${msg}`, ...args); },
+  debug: (fn: string, msg: string, ...args: unknown[]) => { if (levels.debug <= configured) console.log (`[${fn}] -> ${msg}`, ...args); },
+  warn:  (fn: string, msg: string, ...args: unknown[]) => { if (levels.warn  <= configured) console.warn(`[${fn}] -> ${msg}`, ...args); },
+  error: (fn: string, msg: string, ...args: unknown[]) => { if (levels.error <= configured) console.error(`[${fn}] -> ${msg}`, ...args); },
 };

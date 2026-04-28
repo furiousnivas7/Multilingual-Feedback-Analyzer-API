@@ -1,7 +1,7 @@
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SchemaType } from '@google/generative-ai';
 import { z } from 'zod';
 import { env } from '../config/env';
-import { logger } from '../utils/logger';
+import { AppError } from '../utils/AppError';
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -30,6 +30,13 @@ Rules:
    - mixed: contains both positive and negative
 5. Output JSON matching the provided schema. No prose outside JSON.`;
 
+const SAFETY_SETTINGS = [
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT,        threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,       threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+];
+
 const responseSchema = {
   type: SchemaType.OBJECT,
   properties: {
@@ -53,19 +60,13 @@ const responseSchema = {
         enum: ['service', 'price', 'quality', 'delivery', 'staff', 'food', 'app_ux', 'billing', 'other'],
       },
     },
-    is_sarcastic: { type: SchemaType.BOOLEAN },
+    is_sarcastic:     { type: SchemaType.BOOLEAN },
     contains_code_mix: { type: SchemaType.BOOLEAN },
-    rationale: { type: SchemaType.STRING },
+    rationale:         { type: SchemaType.STRING },
   },
   required: [
-    'detected_language',
-    'script',
-    'sentiment',
-    'sentiment_confidence',
-    'themes',
-    'is_sarcastic',
-    'contains_code_mix',
-    'rationale',
+    'detected_language', 'script', 'sentiment', 'sentiment_confidence',
+    'themes', 'is_sarcastic', 'contains_code_mix', 'rationale',
   ],
 };
 
@@ -73,9 +74,13 @@ async function callModel(modelName: string, text: string): Promise<FeedbackAnaly
   const model = genAI.getGenerativeModel({
     model: modelName,
     systemInstruction: SYSTEM_PROMPT,
+    safetySettings: SAFETY_SETTINGS,
     generationConfig: {
+      temperature: 0.1,
       responseMimeType: 'application/json',
       responseSchema,
+      // @ts-expect-error thinkingConfig is supported by Gemini 2.5 Flash but not yet in SDK types
+      thinkingConfig: { thinkingBudget: 0 },
     },
   });
   const result = await model.generateContent(text);
@@ -84,34 +89,36 @@ async function callModel(modelName: string, text: string): Promise<FeedbackAnaly
 }
 
 export async function analyzeText(text: string): Promise<FeedbackAnalysis & { modelUsed: string }> {
-  const fn = 'analyzeText';
   let modelUsed = env.GEMINI_MODEL;
+  console.log('[analyzeText] -> Starting analysis, model:', modelUsed, 'textLen:', text.length);
 
   try {
-    logger.debug(fn, 'Calling Gemini', { model: modelUsed, len: text.length });
     const result = await callModel(modelUsed, text);
 
     if (result.sentiment_confidence < 0.6) {
-      logger.info(fn, 'Low confidence — retrying with Pro', { confidence: result.sentiment_confidence });
+      console.log('[analyzeText] -> Low confidence, retrying with Pro. confidence:', result.sentiment_confidence);
       try {
         modelUsed = 'gemini-2.5-pro';
         const retried = await callModel(modelUsed, text);
+        console.log('[analyzeText] -> Pro retry succeeded');
         return { ...retried, modelUsed };
       } catch (proErr) {
-        logger.warn(fn, 'Pro retry failed, using Flash result', { error: String(proErr) });
+        console.warn('[analyzeText] -> Pro retry failed, using Flash result:', (proErr as Error).message);
         return { ...result, modelUsed: env.GEMINI_MODEL };
       }
     }
 
+    console.log('[analyzeText] -> Completed. sentiment:', result.sentiment, 'confidence:', result.sentiment_confidence);
     return { ...result, modelUsed };
   } catch (err: unknown) {
     const status = (err as { status?: number })?.status;
     if (status === 429) {
-      logger.warn(fn, 'Rate limited — falling back to Flash-Lite');
+      console.warn('[analyzeText] -> Rate limited, falling back to Flash-Lite');
       modelUsed = 'gemini-2.5-flash-lite';
       const result = await callModel(modelUsed, text);
       return { ...result, modelUsed };
     }
-    throw err;
+    console.error('[analyzeText] -> Failed:', (err as Error).message);
+    throw new AppError('Gemini analysis failed', 502);
   }
 }

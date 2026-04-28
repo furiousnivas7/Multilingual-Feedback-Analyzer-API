@@ -1,9 +1,10 @@
-import { Response, NextFunction } from 'express';
-import { AuthRequest } from '../middlewares/authMiddleware';
+import type { Response } from 'express';
+import type { AuthRequest } from '../middlewares/authMiddleware';
 import { SubmitFeedbackSchema, BatchFeedbackSchema, CreateProjectSchema } from '../validators/feedbackValidator';
 import { analyzeText } from '../services/geminiService';
 import { parseUpload } from '../services/uploadService';
-import { logger } from '../utils/logger';
+import { catchAsync } from '../utils/catchAsync';
+import { AppError } from '../utils/AppError';
 import { prisma } from '../lib/prisma';
 
 async function runAnalysis(feedbackId: string, text: string): Promise<void> {
@@ -24,81 +25,75 @@ async function runAnalysis(feedbackId: string, text: string): Promise<void> {
   });
 }
 
-export async function createProject(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { name, description } = CreateProjectSchema.parse(req.body);
-    const project = await prisma.project.create({ data: { name, description, userId: req.userId! } });
-    res.status(201).json({ success: true, data: project });
-  } catch (err) { next(err); }
-}
+export const createProject = catchAsync<AuthRequest>(async (req, res: Response): Promise<void> => {
+  const { name, description } = CreateProjectSchema.parse(req.body);
+  const project = await prisma.project.create({ data: { name, description, userId: req.userId! } });
+  console.log('[createProject] -> Created project:', project.id);
+  res.status(201).json({ success: true, data: project });
+});
 
-export async function listProjects(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const projects = await prisma.project.findMany({
-      where: { userId: req.userId },
-      include: { _count: { select: { feedbacks: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-    res.json({ success: true, data: projects });
-  } catch (err) { next(err); }
-}
+export const listProjects = catchAsync<AuthRequest>(async (req, res: Response): Promise<void> => {
+  const projects = await prisma.project.findMany({
+    where: { userId: req.userId },
+    include: { _count: { select: { feedbacks: true } } },
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json({ success: true, data: projects });
+});
 
-export async function submitFeedback(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { projectId, text, source } = SubmitFeedbackSchema.parse(req.body);
-    const project = await prisma.project.findFirst({ where: { id: projectId, userId: req.userId } });
-    if (!project) { res.status(404).json({ success: false, error: 'Project not found' }); return; }
+export const submitFeedback = catchAsync<AuthRequest>(async (req, res: Response): Promise<void> => {
+  const { projectId, text, source } = SubmitFeedbackSchema.parse(req.body);
 
-    const feedback = await prisma.feedback.create({ data: { rawText: text, source: source ?? 'api', projectId } });
-    logger.debug('submitFeedback', 'Running analysis', { feedbackId: feedback.id });
-    await runAnalysis(feedback.id, text);
+  const project = await prisma.project.findFirst({ where: { id: projectId, userId: req.userId } });
+  if (!project) throw new AppError('Project not found', 404);
 
-    const full = await prisma.feedback.findUnique({ where: { id: feedback.id }, include: { analysis: true } });
-    res.status(201).json({ success: true, data: full });
-  } catch (err) { next(err); }
-}
+  const feedback = await prisma.feedback.create({ data: { rawText: text, source: source ?? 'api', projectId } });
+  console.log('[submitFeedback] -> Running analysis for feedbackId:', feedback.id);
+  await runAnalysis(feedback.id, text);
 
-export async function batchFeedback(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const { projectId, items } = BatchFeedbackSchema.parse(req.body);
-    const project = await prisma.project.findFirst({ where: { id: projectId, userId: req.userId } });
-    if (!project) { res.status(404).json({ success: false, error: 'Project not found' }); return; }
+  const full = await prisma.feedback.findUnique({ where: { id: feedback.id }, include: { analysis: true } });
+  res.status(201).json({ success: true, data: full });
+});
 
-    const results = await Promise.allSettled(
-      items.map(async (item) => {
-        const feedback = await prisma.feedback.create({ data: { rawText: item.text, source: item.source ?? 'api', projectId } });
-        await runAnalysis(feedback.id, item.text);
-        return feedback.id;
-      })
-    );
+export const batchFeedback = catchAsync<AuthRequest>(async (req, res: Response): Promise<void> => {
+  const { projectId, items } = BatchFeedbackSchema.parse(req.body);
 
-    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
-    const failed = results.filter((r) => r.status === 'rejected').length;
-    logger.info('batchFeedback', 'Batch complete', { succeeded, failed });
-    res.status(201).json({ success: true, data: { processed: succeeded, failed } });
-  } catch (err) { next(err); }
-}
+  const project = await prisma.project.findFirst({ where: { id: projectId, userId: req.userId } });
+  if (!project) throw new AppError('Project not found', 404);
 
-export async function uploadFeedback(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const projectId = req.body.projectId as string;
-    if (!projectId) { res.status(400).json({ success: false, error: 'projectId is required' }); return; }
-    if (!req.file) { res.status(400).json({ success: false, error: 'No file uploaded' }); return; }
+  const results = await Promise.allSettled(
+    items.map(async (item) => {
+      const feedback = await prisma.feedback.create({ data: { rawText: item.text, source: item.source ?? 'api', projectId } });
+      await runAnalysis(feedback.id, item.text);
+      return feedback.id;
+    })
+  );
 
-    const project = await prisma.project.findFirst({ where: { id: projectId, userId: req.userId } });
-    if (!project) { res.status(404).json({ success: false, error: 'Project not found' }); return; }
+  const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+  const failed = results.filter((r) => r.status === 'rejected').length;
+  console.log('[batchFeedback] -> Completed. succeeded:', succeeded, 'failed:', failed);
+  res.status(201).json({ success: true, data: { processed: succeeded, failed } });
+});
 
-    const rows = parseUpload(req.file.buffer, req.file.mimetype);
-    logger.info('uploadFeedback', 'Parsed rows', { count: rows.length });
+export const uploadFeedback = catchAsync<AuthRequest>(async (req, res: Response): Promise<void> => {
+  const projectId = req.body.projectId as string;
+  if (!projectId) throw new AppError('projectId is required', 400);
+  if (!req.file) throw new AppError('No file uploaded', 400);
 
-    const results = await Promise.allSettled(
-      rows.map(async (row) => {
-        const feedback = await prisma.feedback.create({ data: { rawText: row.text, source: 'upload', projectId } });
-        await runAnalysis(feedback.id, row.text);
-      })
-    );
+  const project = await prisma.project.findFirst({ where: { id: projectId, userId: req.userId } });
+  if (!project) throw new AppError('Project not found', 404);
 
-    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
-    res.status(201).json({ success: true, data: { totalRows: rows.length, processed: succeeded } });
-  } catch (err) { next(err); }
-}
+  const rows = parseUpload(req.file.buffer, req.file.mimetype);
+  console.log('[uploadFeedback] -> Parsed rows:', rows.length);
+
+  const results = await Promise.allSettled(
+    rows.map(async (row) => {
+      const feedback = await prisma.feedback.create({ data: { rawText: row.text, source: 'upload', projectId } });
+      await runAnalysis(feedback.id, row.text);
+    })
+  );
+
+  const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+  console.log('[uploadFeedback] -> Completed. processed:', succeeded, 'of', rows.length);
+  res.status(201).json({ success: true, data: { totalRows: rows.length, processed: succeeded } });
+});

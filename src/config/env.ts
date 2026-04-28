@@ -1,20 +1,18 @@
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 dotenv.config();
 
-function mustGet(key: string): string {
-  const val = process.env[key];
-  if (!val) throw new Error(`Missing required env var: ${key}`);
-  return val;
-}
+const EnvSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.coerce.number().default(3000),
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  JWT_EXPIRES_IN: z.string().default('7d'),
+  GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
+  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
+  LOG_LEVEL: z.enum(['info', 'debug', 'error']).default('info'),
+});
 
-export const env = {
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  PORT: parseInt(process.env.PORT || '3000', 10),
-  DATABASE_URL: mustGet('DATABASE_URL'),
-  JWT_SECRET: mustGet('JWT_SECRET'),
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-  GEMINI_API_KEY: mustGet('GEMINI_API_KEY'),
-  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-  LOG_LEVEL: process.env.LOG_LEVEL || 'info',
-} as const;
+export const env = EnvSchema.parse(process.env);
+export type Env = z.infer<typeof EnvSchema>;
