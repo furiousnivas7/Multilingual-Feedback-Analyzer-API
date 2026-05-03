@@ -1,33 +1,22 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-
-type AccentColor = 'blue' | 'green' | 'red' | 'amber' | 'slate';
-
-const ACCENT: Record<AccentColor, string> = {
-  blue: 'border-l-[#2E75B6]',
-  green: 'border-l-[#22C55E]',
-  red: 'border-l-[#EF4444]',
-  amber: 'border-l-[#F59E0B]',
-  slate: 'border-l-[#94A3B8]',
-};
 
 interface KpiCardProps {
   title: string;
   value: string | number;
-  icon: LucideIcon;
+  icon?: React.ReactNode;
   trend?: { value: number; direction: 'up' | 'down' | 'neutral' };
-  accentColor?: AccentColor;
+  accentColor?: string;
   loading?: boolean;
 }
 
 export function KpiCard({
   title,
   value,
-  icon: Icon,
+  icon,
   trend,
-  accentColor = 'blue',
+  accentColor = '#2E75B6',
   loading,
 }: KpiCardProps) {
   if (loading) {
@@ -42,10 +31,8 @@ export function KpiCard({
 
   return (
     <div
-      className={cn(
-        'bg-white rounded-lg border border-[#E2E8F0] p-6 border-l-4',
-        ACCENT[accentColor]
-      )}
+      className="bg-white rounded-lg border border-[#E2E8F0] p-6 border-l-4"
+      style={{ borderLeftColor: accentColor }}
     >
       <div className="flex items-start justify-between">
         <div>
@@ -69,9 +56,11 @@ export function KpiCard({
             </div>
           )}
         </div>
-        <div className="rounded-lg bg-[#F5F7FA] p-2">
-          <Icon className="h-5 w-5 text-[#2E75B6]" aria-hidden="true" />
-        </div>
+        {icon && (
+          <div className="rounded-lg bg-[#F5F7FA] p-2 text-[#2E75B6]">
+            {icon}
+          </div>
+        )}
       </div>
     </div>
   );
