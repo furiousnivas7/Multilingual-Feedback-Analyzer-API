@@ -2,9 +2,7 @@
 
 import { use, useRef, useState } from 'react';
 import { useUploadFile, useBatchJobList, useBatchJob } from '@/hooks/useBatchJob';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { FileSpreadsheet, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import type { BatchJobStatus } from '@/types/api';
 
 interface Props {
@@ -49,7 +47,9 @@ function ActiveJob({ jobId }: { jobId: string }) {
       </div>
 
       {(job.status === 'processing' || job.status === 'queued') && (
-        <Progress value={pct} className="h-2" />
+        <div className="h-2 bg-[#F1F5F9] rounded-full overflow-hidden">
+          <div className="h-full bg-[#2E75B6] rounded-full transition-all" style={{ width: `${pct}%` }} />
+        </div>
       )}
 
       <div className="grid grid-cols-3 gap-3 text-center">

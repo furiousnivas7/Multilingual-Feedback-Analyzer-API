@@ -59,7 +59,10 @@ export function FeedbackDrawer({ feedbackId, open, onClose }: Props) {
                         <LanguageBadge language={data.analysis.detectedLanguage} />
                       </Row>
                       <Row label="Sentiment">
-                        <SentimentBadge sentiment={data.analysis.sentiment} />
+                        <SentimentBadge
+                          sentiment={data.analysis.sentiment}
+                          confidence={data.analysis.confidence}
+                        />
                       </Row>
                       <Row label="Confidence">
                         <div className="flex items-center gap-2 justify-end">
@@ -79,7 +82,9 @@ export function FeedbackDrawer({ feedbackId, open, onClose }: Props) {
                       <Row label="Code-mix">{data.analysis.containsCodeMix ? 'Yes' : 'No'}</Row>
                       <Row label="Model">{data.analysis.modelUsed}</Row>
                       <Row label="Latency">
-                        {data.analysis.latencyMs != null ? `${data.analysis.latencyMs}ms` : '—'}
+                        {data.analysis.latencyMs != null
+                          ? `${data.analysis.latencyMs}ms`
+                          : '—'}
                       </Row>
                     </div>
                   </div>

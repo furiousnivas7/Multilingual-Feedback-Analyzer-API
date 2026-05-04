@@ -7,8 +7,7 @@ import { useReport } from '@/hooks/useReport';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { KpiRowSkeleton } from '@/components/shared/LoadingSkeleton';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { MessageSquare, Upload, BarChart2, Settings, TrendingUp, Minus } from 'lucide-react';
+import { MessageSquare, Upload, BarChart2, TrendingUp, Minus } from 'lucide-react';
 
 interface Props {
   params: Promise<{ id: string }>;

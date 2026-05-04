@@ -10,7 +10,6 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { SentimentTrendChart } from '@/components/charts/SentimentTrendChart';
 import { LanguageDonut } from '@/components/charts/LanguageDonut';
 import { ThemeBarChart } from '@/components/charts/ThemeBarChart';
-import { SentimentBadge } from '@/components/analysis/SentimentBadge';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, TrendingUp, AlertTriangle, BarChart2 } from 'lucide-react';
 
