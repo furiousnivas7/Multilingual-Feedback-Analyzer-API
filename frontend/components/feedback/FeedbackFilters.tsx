@@ -53,7 +53,7 @@ export function FeedbackFilters() {
 
       <Select
         value={searchParams.get('sentiment') ?? 'all'}
-        onValueChange={(v) => update('sentiment', v)}
+        onValueChange={(v) => update('sentiment', v ?? '')}
       >
         <SelectTrigger className="w-[130px] h-9 text-sm">
           <SelectValue placeholder="Sentiment" />
@@ -68,7 +68,7 @@ export function FeedbackFilters() {
 
       <Select
         value={searchParams.get('lang') ?? 'all'}
-        onValueChange={(v) => update('lang', v)}
+        onValueChange={(v) => update('lang', v ?? '')}
       >
         <SelectTrigger className="w-[130px] h-9 text-sm">
           <SelectValue placeholder="Language" />
@@ -83,7 +83,7 @@ export function FeedbackFilters() {
 
       <Select
         value={searchParams.get('theme') ?? 'all'}
-        onValueChange={(v) => update('theme', v)}
+        onValueChange={(v) => update('theme', v ?? '')}
       >
         <SelectTrigger className="w-[120px] h-9 text-sm">
           <SelectValue placeholder="Theme" />
