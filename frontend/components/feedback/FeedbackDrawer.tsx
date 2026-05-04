@@ -6,7 +6,6 @@ import { SentimentBadge } from '@/components/analysis/SentimentBadge';
 import { LanguageBadge } from '@/components/analysis/LanguageBadge';
 import { ThemeChip } from '@/components/analysis/ThemeChip';
 import { useFeedbackDetail } from '@/hooks/useFeedback';
-import { Progress } from '@/components/ui/progress';
 
 interface Props {
   feedbackId: string | null;
@@ -27,7 +26,7 @@ export function FeedbackDrawer({ feedbackId, open, onClose }: Props) {
   const { data, isLoading } = useFeedbackDetail(feedbackId ?? '');
 
   return (
-    <Drawer open={open} onClose={onClose} direction="right">
+    <Drawer open={open} onOpenChange={(o) => { if (!o) onClose(); }} direction="right">
       <DrawerContent className="h-full w-full max-w-md ml-auto rounded-none">
         <DrawerHeader className="border-b border-[#E2E8F0] pb-4">
           <DrawerTitle className="text-base font-semibold text-[#1A3C5E]">
