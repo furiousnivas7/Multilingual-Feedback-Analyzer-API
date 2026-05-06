@@ -1,12 +1,12 @@
 'use client';
 
-import { use, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useUploadFile, useBatchJobList, useBatchJob } from '@/hooks/useBatchJob';
 import { FileSpreadsheet, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import type { BatchJobStatus } from '@/types/api';
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 function StatusBadge({ status }: { status: BatchJobStatus }) {
@@ -79,7 +79,7 @@ function ActiveJob({ jobId }: { jobId: string }) {
 }
 
 export default function UploadPage({ params }: Props) {
-  const { id } = use(params);
+  const { id } = params;
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);

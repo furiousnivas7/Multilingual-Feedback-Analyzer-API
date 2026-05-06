@@ -25,8 +25,8 @@ export function useLogin() {
 
   return useMutation<AuthResponse, Error, LoginRequest & { remember?: boolean }>({
     mutationFn: async ({ remember: _r, ...body }) => {
-      const res = await api.post<AuthResponse>('/api/v1/auth/login', body);
-      return res.data;
+      const res = await api.post<{ data: AuthResponse }>('/api/v1/auth/login', body);
+      return res.data.data;
     },
     onSuccess: (data, vars) => {
       setToken(data.token, vars.remember);
@@ -42,8 +42,8 @@ export function useRegister() {
 
   return useMutation<AuthResponse, Error, RegisterRequest>({
     mutationFn: async (body) => {
-      const res = await api.post<AuthResponse>('/api/v1/auth/register', body);
-      return res.data;
+      const res = await api.post<{ data: AuthResponse }>('/api/v1/auth/register', body);
+      return res.data.data;
     },
     onSuccess: (data) => {
       setToken(data.token);

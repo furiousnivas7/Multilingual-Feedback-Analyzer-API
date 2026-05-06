@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+
 import { useReport, useSentimentTrend, useThemes } from '@/hooks/useReport';
 import { KpiCard } from '@/components/shared/KpiCard';
 import { KpiRowSkeleton, ChartSkeleton } from '@/components/shared/LoadingSkeleton';
@@ -21,11 +21,11 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function ReportPage({ params }: Props) {
-  const { id } = use(params);
+  const { id } = params;
   const { data: report, isLoading: reportLoading } = useReport(id);
   const { data: trend, isLoading: trendLoading } = useSentimentTrend(id);
   const { data: themes, isLoading: themesLoading } = useThemes(id);

@@ -12,6 +12,11 @@ app.use(cors({
   origin: ['http://localhost:3001', 'http://localhost:3000'],
   credentials: true,
 }));
+app.use((req, _res, next) => {
+  const ct = req.headers['content-type'];
+  if (ct) req.headers['content-type'] = ct.replace(/charset=UTF-8/gi, 'charset=utf-8');
+  next();
+});
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 

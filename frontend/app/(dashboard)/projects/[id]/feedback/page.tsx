@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useFeedbackList } from '@/hooks/useFeedback';
@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import type { FeedbackFilters as FeedbackFiltersType } from '@/types/api';
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 function FeedbackContent({ projectId }: { projectId: string }) {
@@ -94,7 +94,7 @@ function FeedbackContent({ projectId }: { projectId: string }) {
 }
 
 export default function FeedbackPage({ params }: Props) {
-  const { id } = use(params);
+  const { id } = params;
 
   return (
     <div className="space-y-6">

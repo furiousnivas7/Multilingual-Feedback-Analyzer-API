@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+
 import Link from 'next/link';
 import { useProject } from '@/hooks/useProjects';
 import { useReport } from '@/hooks/useReport';
@@ -10,11 +10,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, Upload, BarChart2, TrendingUp, Minus } from 'lucide-react';
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function ProjectDetailPage({ params }: Props) {
-  const { id } = use(params);
+  const { id } = params;
   const { data: project, isLoading: projectLoading } = useProject(id);
   const { data: report, isLoading: reportLoading } = useReport(id);
 
